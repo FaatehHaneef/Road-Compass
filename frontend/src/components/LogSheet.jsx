@@ -220,7 +220,7 @@ const LogSheet = ({ sheet, dayNumber }) => {
   })
 
   return (
-    <div className="card log-sheet" style={{ overflowX: 'auto', padding: '1.5rem', background: 'var(--bg-primary)' }}>
+    <div className="card log-sheet" style={{ overflowX: 'auto', padding: '1.25rem', background: 'var(--bg-primary)', minWidth: '920px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <div>
           <h4 style={{ margin: 0, color: 'var(--accent)', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>

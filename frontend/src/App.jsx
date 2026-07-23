@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import axios from 'axios'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Truck, MapPin, Loader2, AlertCircle } from 'lucide-react'
+import { Truck, MapPin, Loader2, AlertCircle, ArrowRight, Sparkles, ShieldCheck, PanelTop } from 'lucide-react'
 
 // Components
+import FlowBackground from './components/FlowBackground'
 import MapView from './components/MapView'
 import StopsList from './components/StopsList'
 import LogSheet from './components/LogSheet'
@@ -19,6 +20,8 @@ const getApiBaseUrl = () => {
 }
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true)
+  const [showLogs, setShowLogs] = useState(true)
   const [formData, setFormData] = useState({
     current_location: '',
     pickup_location: '',
@@ -55,6 +58,7 @@ function App() {
       
       const res = await axios.post(`${apiUrl}/api/trip/`, formData)
       setResult(res.data)
+      setShowLogs(true)
     } catch (err) {
       if (err?.response && err.response.data && err.response.data.errors) {
         setError(err.response.data.errors.join(' '))
@@ -69,174 +73,232 @@ function App() {
   }
 
   return (
-    <div className="container" style={{ paddingBottom: '4rem' }}>
-      <header style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div style={{ 
-          background: 'var(--accent)', 
-          padding: '0.75rem', 
-          borderRadius: 'var(--radius-md)',
-          boxShadow: '0 0 20px rgba(79, 142, 247, 0.3)'
-        }}>
-          <Truck size={32} color="white" />
-        </div>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-            Spotter<span className="text-accent">ELD</span>
-          </h1>
-          <p className="text-secondary" style={{ marginTop: '-0.25rem' }}>
-            FMCSA Compliant Trip Planner
-          </p>
-        </div>
-      </header>
+    <div className="app-shell">
+      <FlowBackground />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
-        
-        {/* Left Column: Form */}
-        <section>
-          <div className="card">
-            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <MapPin size={20} className="text-accent" /> Trip Details
-            </h2>
-            
-            <form onSubmit={handleSubmit}>
-              <div className="input-group">
-                <label>Current Location</label>
-                <input 
-                  type="text" 
-                  name="current_location"
-                  placeholder="e.g. Chicago, IL" 
-                  value={formData.current_location}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="input-group">
-                <label>Pickup Location</label>
-                <input 
-                  type="text" 
-                  name="pickup_location"
-                  placeholder="e.g. St. Louis, MO" 
-                  value={formData.pickup_location}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="input-group">
-                <label>Dropoff Location</label>
-                <input 
-                  type="text" 
-                  name="dropoff_location"
-                  placeholder="e.g. Dallas, TX" 
-                  value={formData.dropoff_location}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="input-group">
-                <label>Cycle Hours Used (Last 8 Days)</label>
-                <input 
-                  type="number" 
-                  name="current_cycle_used"
-                  min="0"
-                  max="70"
-                  step="0.5"
-                  value={formData.current_cycle_used}
-                  onChange={handleInputChange}
-                  required
-                />
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                  Max 70 hours limit per FMCSA.
-                </p>
-              </div>
-              
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                style={{ width: '100%', marginTop: '1rem' }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} /> 
-                    Calculating Route...
-                  </>
-                ) : (
-                  'Generate Trip Plan'
-                )}
-              </button>
-            </form>
-
-            <AnimatePresence>
-              {error && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  style={{ 
-                    marginTop: '1rem', 
-                    padding: '1rem', 
-                    background: 'rgba(239, 68, 68, 0.1)', 
-                    border: '1px solid var(--accent-red)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--accent-red)',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.5rem',
-                    fontSize: '0.875rem'
-                  }}
-                >
-                  <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <p>{error}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </section>
-
-        {/* Right Column: Map */}
-        <section>
-          <div className="card" style={{ height: '100%', minHeight: '500px', padding: 0, overflow: 'hidden', position: 'relative' }}>
-            <MapView 
-              waypoints={result?.route?.waypoints} 
-              geometries={result?.route?.geometries} 
-              stops={result?.stops}
-            />
-          </div>
-        </section>
-      </div>
-
-      {/* Results Section */}
-      <AnimatePresence>
-        {result && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            style={{ marginTop: '2rem' }}
+      <AnimatePresence mode="wait">
+        {showIntro ? (
+          <motion.section
+            key="intro"
+            className="intro-screen"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
           >
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
-              
-              {/* Timeline List */}
-              <div className="card">
-                <h3 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
-                  Trip Timeline
-                </h3>
-                <StopsList schedule={result.schedule} summary={result.summary} />
+            <motion.div
+              className="intro-card card"
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 180, y: -120, rotate: -8, scale: 0.92 }}
+              transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+            >
+              <div className="intro-badge">
+                <Sparkles size={14} />
+                FUTURE READY ELD PLANNER
               </div>
-
-              {/* Log Sheets */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem' }}>Driver Daily Logs</h3>
-                {result.log_sheets.map((sheet, idx) => (
-                  <LogSheet key={sheet.date} sheet={sheet} dayNumber={idx + 1} />
-                ))}
+              <h1>Plan the load. Prove the hours. Keep the wheel turning.</h1>
+              <p>
+                Build a compliant trip in seconds with route intelligence, HOS logic, and export-ready driver logs.
+              </p>
+              <div className="intro-actions">
+                <button className="btn btn-primary btn-xl" onClick={() => setShowIntro(false)}>
+                  Enter Planner
+                  <ArrowRight size={18} />
+                </button>
+                <div className="intro-note">
+                  <ShieldCheck size={16} />
+                  FMCSA-aware planning with map, stops, and daily logs
+                </div>
               </div>
+            </motion.div>
+          </motion.section>
+        ) : (
+          <motion.main
+            key="planner"
+            className="container planner-shell"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+          >
+            <header className="planner-header">
+              <div className="brand-lockup">
+                <div className="brand-mark">
+                  <Truck size={30} color="white" />
+                </div>
+                <div>
+                  <h1>Spotter<span className="text-accent">ELD</span></h1>
+                  <p>FMCSA Compliant Trip Planner</p>
+                </div>
+              </div>
+              <div className="header-chip">
+                <PanelTop size={16} />
+                Welcome screen removed, planner live
+              </div>
+            </header>
 
+            <div className="planner-grid">
+              <section className="card planner-card">
+                <div className="section-title">
+                  <MapPin size={18} className="text-accent" />
+                  <div>
+                    <h2>Trip Details</h2>
+                    <p>Enter the route and the hours you already used this cycle.</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                  <div className="input-group">
+                    <label>Current Location</label>
+                    <input
+                      type="text"
+                      name="current_location"
+                      placeholder="e.g. Chicago, IL"
+                      value={formData.current_location}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Pickup Location</label>
+                    <input
+                      type="text"
+                      name="pickup_location"
+                      placeholder="e.g. St. Louis, MO"
+                      value={formData.pickup_location}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Dropoff Location</label>
+                    <input
+                      type="text"
+                      name="dropoff_location"
+                      placeholder="e.g. Dallas, TX"
+                      value={formData.dropoff_location}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Cycle Hours Used (Last 8 Days)</label>
+                    <input
+                      type="number"
+                      name="current_cycle_used"
+                      min="0"
+                      max="70"
+                      step="0.5"
+                      value={formData.current_cycle_used}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <p className="field-help">Max 70 hours per FMCSA cycle.</p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-block"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 size={18} className="spin" />
+                        Calculating route...
+                      </>
+                    ) : (
+                      'Generate Trip Plan'
+                    )}
+                  </button>
+                </form>
+
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: 10, height: 0 }}
+                      className="alert alert-error"
+                    >
+                      <AlertCircle size={18} />
+                      <p>{error}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </section>
+
+              <section className="card map-card">
+                <MapView
+                  waypoints={result?.route?.waypoints}
+                  geometries={result?.route?.geometries}
+                  stops={result?.stops}
+                />
+              </section>
+
+              <AnimatePresence>
+                {result && (
+                  <motion.section
+                    className="card results-band"
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 18 }}
+                    transition={{ duration: 0.35 }}
+                  >
+                    <div className="results-head">
+                      <div>
+                        <h2>Trip Output</h2>
+                        <p>
+                          The timeline is horizontal so the sequence reads left to right like the actual drive.
+                        </p>
+                      </div>
+                      <div className="summary-strip">
+                        <span>{result.summary.total_days} days</span>
+                        <span>{result.summary.total_driving_hours}h driving</span>
+                        <span>{result.summary.total_rest_hours}h rest</span>
+                        <span>{result.summary.total_stops} stops</span>
+                      </div>
+                    </div>
+
+                    <StopsList schedule={result.schedule} summary={result.summary} />
+
+                    <div className="logs-panel">
+                      <div className="logs-panel-head">
+                        <div>
+                          <h3>ELD Compliance Logs</h3>
+                          <p>
+                            These are the rendered daily driver log sheets. They matter because they show the schedule
+                            in the FMCSA-style grid format you’d use for compliance review or handoff.
+                          </p>
+                        </div>
+                        <button className="btn btn-secondary" type="button" onClick={() => setShowLogs((v) => !v)}>
+                          {showLogs ? 'Hide logs' : 'Show logs'}
+                        </button>
+                      </div>
+
+                      <AnimatePresence>
+                        {showLogs && (
+                          <motion.div
+                            className="logs-strip"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <div className="logs-row">
+                              {result.log_sheets.map((sheet, idx) => (
+                                <LogSheet key={sheet.date} sheet={sheet} dayNumber={idx + 1} />
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.section>
+                )}
+              </AnimatePresence>
             </div>
-          </motion.div>
+          </motion.main>
         )}
       </AnimatePresence>
-
     </div>
   )
 }
