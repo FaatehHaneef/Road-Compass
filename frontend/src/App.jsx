@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import axios from 'axios'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Truck, MapPin, Loader2, AlertCircle, ArrowRight, Sparkles, ShieldCheck, PanelTop } from 'lucide-react'
+import { Truck, MapPin, Loader2, AlertCircle, ArrowRight } from 'lucide-react'
 
 // Components
 import FlowBackground from './components/FlowBackground'
@@ -21,7 +21,7 @@ const getApiBaseUrl = () => {
 
 function App() {
   const [showIntro, setShowIntro] = useState(true)
-  const [showLogs, setShowLogs] = useState(true)
+  const [showLogs, setShowLogs] = useState(false)
   const [formData, setFormData] = useState({
     current_location: '',
     pickup_location: '',
@@ -58,7 +58,7 @@ function App() {
       
       const res = await axios.post(`${apiUrl}/api/trip/`, formData)
       setResult(res.data)
-      setShowLogs(true)
+      setShowLogs(false)
     } catch (err) {
       if (err?.response && err.response.data && err.response.data.errors) {
         setError(err.response.data.errors.join(' '))
@@ -87,28 +87,18 @@ function App() {
           >
             <motion.div
               className="intro-card card"
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              initial={{ opacity: 0, y: 18, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 180, y: -120, rotate: -8, scale: 0.92 }}
+              exit={{ opacity: 0, y: -120, scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 120, damping: 18 }}
             >
-              <div className="intro-badge">
-                <Sparkles size={14} />
-                FUTURE READY ELD PLANNER
-              </div>
-              <h1>Plan the load. Prove the hours. Keep the wheel turning.</h1>
-              <p>
-                Build a compliant trip in seconds with route intelligence, HOS logic, and export-ready driver logs.
-              </p>
+                <h1>Road Compass</h1>
+                <p>Plan the route. Prove the hours.</p>
               <div className="intro-actions">
                 <button className="btn btn-primary btn-xl" onClick={() => setShowIntro(false)}>
                   Enter Planner
                   <ArrowRight size={18} />
                 </button>
-                <div className="intro-note">
-                  <ShieldCheck size={16} />
-                  FMCSA-aware planning with map, stops, and daily logs
-                </div>
               </div>
             </motion.div>
           </motion.section>
@@ -126,13 +116,12 @@ function App() {
                   <Truck size={30} color="white" />
                 </div>
                 <div>
-                  <h1>Spotter<span className="text-accent">ELD</span></h1>
-                  <p>FMCSA Compliant Trip Planner</p>
+                  <h1>Road<span className="text-accent"> Compass</span></h1>
+                  <p>FMCSA-aware trip planner</p>
                 </div>
               </div>
               <div className="header-chip">
-                <PanelTop size={16} />
-                Welcome screen removed, planner live
+                Planner live
               </div>
             </header>
 
@@ -265,8 +254,7 @@ function App() {
                         <div>
                           <h3>ELD Compliance Logs</h3>
                           <p>
-                            These are the rendered daily driver log sheets. They matter because they show the schedule
-                            in the FMCSA-style grid format you’d use for compliance review or handoff.
+                            Optional compliance view. Hide it when you only need the route story.
                           </p>
                         </div>
                         <button className="btn btn-secondary" type="button" onClick={() => setShowLogs((v) => !v)}>
