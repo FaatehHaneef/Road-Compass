@@ -8,6 +8,16 @@ import MapView from './components/MapView'
 import StopsList from './components/StopsList'
 import LogSheet from './components/LogSheet'
 
+const getApiBaseUrl = () => {
+  const apiUrl = import.meta.env.VITE_API_URL?.trim()
+
+  if (apiUrl) {
+    return apiUrl.replace(/\/$/, '')
+  }
+
+  return ''
+}
+
 function App() {
   const [formData, setFormData] = useState({
     current_location: '',
@@ -35,15 +45,21 @@ function App() {
     setResult(null)
 
     try {
-      // In dev, Vite proxies /api to Django on :8000
-      // In prod (Vercel), VITE_API_URL should point to the Render backend URL
-      const apiUrl = import.meta.env.VITE_API_URL || ''
+      // In dev, Vite proxies /api to Django on :8000.
+      // In prod, set VITE_API_URL to the deployed backend URL.
+      const apiUrl = getApiBaseUrl()
+
+      if (import.meta.env.PROD && !apiUrl) {
+        throw new Error('Missing VITE_API_URL. Set it in Vercel to your deployed backend URL.')
+      }
       
       const res = await axios.post(`${apiUrl}/api/trip/`, formData)
       setResult(res.data)
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.errors) {
+      if (err?.response && err.response.data && err.response.data.errors) {
         setError(err.response.data.errors.join(' '))
+      } else if (err?.message) {
+        setError(err.message)
       } else {
         setError('Network error: Could not reach the planner engine.')
       }
