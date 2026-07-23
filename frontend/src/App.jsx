@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import axios from 'axios'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Truck, MapPin, Loader2, AlertCircle, ArrowRight } from 'lucide-react'
+import { Truck, MapPin, Loader2, AlertCircle } from 'lucide-react'
 
 // Components
 import FlowBackground from './components/FlowBackground'
@@ -86,18 +86,18 @@ function App() {
             transition={{ duration: 0.35 }}
           >
             <motion.div
-              className="intro-card card"
+              className="intro-copy"
               initial={{ opacity: 0, y: 18, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -120, scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 120, damping: 18 }}
             >
-                <h1>Road Compass</h1>
-                <p>Plan the route. Prove the hours.</p>
+              <h1>Road Compass</h1>
+              <p>Plan the route. Prove the hours.</p>
               <div className="intro-actions">
-                <button className="btn btn-primary btn-xl" onClick={() => setShowIntro(false)}>
-                  Enter Planner
-                  <ArrowRight size={18} />
+                <button className="btn btn-primary btn-pill" onClick={() => setShowIntro(false)}>
+                  <Truck size={18} />
+                  <span>Enter Planner</span>
                 </button>
               </div>
             </motion.div>
@@ -174,6 +174,7 @@ function App() {
                     <input
                       type="number"
                       name="current_cycle_used"
+                      inputMode="numeric"
                       min="0"
                       max="70"
                       step="0.5"
